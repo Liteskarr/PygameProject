@@ -1,5 +1,6 @@
 # TODO: docs
 
 class Resource:
-    def get_cost(self) -> float:
+    @staticmethod
+    def get_cost() -> float:
         raise NotImplementedError()
