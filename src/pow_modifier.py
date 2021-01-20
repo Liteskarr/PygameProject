@@ -22,7 +22,6 @@ class POWModifierKind(Enum):
     BIOME = auto()
 
 
-
 @dataclass
 class POWModifier:
     """
@@ -39,6 +38,7 @@ class POWModifier:
         Проверяет, действует ли модификатор на текущем ходу.
         Модификатор оказывает свое действие, начиная с хода применения.
         :param current_turn: Текущий ход.
+        :return: True, если действует, иначе False.
         """
         return current_turn - self.from_turn - 1 >= self.duration
 
