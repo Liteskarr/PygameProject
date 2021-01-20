@@ -17,8 +17,8 @@ class UnitGroupsContainer:
     """
     Реализует хранение, добавление, удаление и поиск групп юнита.
     """
-    def __init__(self):
-        self._groups = set()
+    def __init__(self, *groups):
+        self._groups = set(groups)
 
     def add(self, group: type):
         """
