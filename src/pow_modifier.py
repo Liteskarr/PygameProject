@@ -20,6 +20,10 @@ class POWModifierKind(Enum):
     TERRAIN = auto()
     # Модификатор биома.
     BIOME = auto()
+    # Модификатор защиты.
+    DEFENCIVE = auto()
+    # Модификатор атаки
+    ATTACKING = auto()
 
 
 @dataclass
