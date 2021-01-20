@@ -7,6 +7,11 @@ from src.unit_group_container import UnitGroupsContainer
 
 
 class UnitType:
+    """
+    Описывает тип юнита на игровом поле.
+    Является статическим классом.
+    """
+
     @staticmethod
     def get_groups() -> UnitGroupsContainer:
         """
