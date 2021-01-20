@@ -34,14 +34,14 @@ class UnitType:
         raise NotImplementedError()
 
     @staticmethod
-    def on_attacking_against(groups: UnitGroupsContainer) -> POWModifier:
+    def on_attacking_against(current_turn: int, groups: UnitGroupsContainer) -> POWModifier:
         """
         Возвращает модификатор к POW для данного юнита в атаке против юнита, имеющего данные группы.
         """
         raise NotImplementedError()
 
     @staticmethod
-    def on_defending_against(groups: UnitGroupsContainer) -> POWModifier:
+    def on_defending_against(current_turn: int, groups: UnitGroupsContainer) -> POWModifier:
         """
         Возвращает модификатор к POW для данного юнита в защите против юнита, имеющего данные группы.
         """
