@@ -27,6 +27,7 @@ class POWModifier:
     """
     Класс-контейнер для данных модификатора.
     """
+
     kind: POWModifierKind
     eternal: bool
     duration: int
