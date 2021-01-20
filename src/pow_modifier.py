@@ -45,7 +45,7 @@ class POWModifier:
         :param current_turn: Текущий ход.
         :return: True, если действует, иначе False.
         """
-        return current_turn - self.from_turn - 1 >= self.duration
+        return current_turn - self.from_turn - 1 >= self.duration or self.eternal
 
 
 def filter_overdue_modifiers(current_turn: int, modifiers: Iterable[POWModifier]) -> Iterable[POWModifier]:
