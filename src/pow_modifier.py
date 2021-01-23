@@ -59,6 +59,9 @@ class NonePOWModifier(POWModifier):
     from_turn = 0
     value = 0
 
+    def __init__(self):
+        pass
+
     def is_valid(self, current_turn: int) -> bool:
         return False
 
