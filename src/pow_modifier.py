@@ -48,6 +48,24 @@ class POWModifier:
         return current_turn - self.from_turn - 1 >= self.duration or self.eternal
 
 
+class NonePOWModifier(POWModifier):
+    """
+    Класс-заглушка для пустых модификаторов, которые могут быть использованы в некоторых классах.
+    """
+
+    king = None
+    eternal = False
+    duration = 0
+    from_turn = 0
+    value = 0
+
+    def __init__(self):
+        pass
+
+    def is_valid(self, current_turn: int) -> bool:
+        return False
+
+
 def filter_overdue_modifiers(current_turn: int, modifiers: Iterable[POWModifier]) -> Iterable[POWModifier]:
     """
     Отфильтровывает недействительные модификаторы.
