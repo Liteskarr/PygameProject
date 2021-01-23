@@ -9,3 +9,9 @@ class Biome:
     @staticmethod
     def get_supply_cost() -> int:
         raise NotImplementedError()
+
+
+class NoneBiome(Biome):
+    @staticmethod
+    def get_supply_cost() -> int:
+        return 1
