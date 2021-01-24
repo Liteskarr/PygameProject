@@ -10,11 +10,12 @@ class Camera:
     Класс игровой камеры.
     """
 
-    def __init__(self, x: int, y: int, width: int, height: int):
+    def __init__(self, x: int, y: int, width: int, height: int, zoom_factor: float = 1):
         self._x = x
         self._y = y
         self._width = width
         self._height = height
+        self._zoom_factor = zoom_factor
 
     def intersect_with_rect(self, rect: Tuple[int, int, int, int]) -> bool:
         """
@@ -32,6 +33,13 @@ class Camera:
         Лежит ли точка в игровом мире в обзоре камеры.
         """
         return self._x <= x <= self._x + self._width and self._y <= y <= self._y + self._height
+
+    def set_zoom_factor(self, zoom_factor: float):
+        self._zoom_factor = zoom_factor
+
+    def modify_zoom_factor(self, delta_zf: float):
+        self._zoom_factor += delta_zf
+        self._zoom_factor = max(0, self._zoom_factor)
 
     def move(self, x: int, y: int):
         """
@@ -72,3 +80,12 @@ class Camera:
         Преобразует мировые координаты в координаты на экране.
         """
         return x - self._x, y - self._y
+
+    def get_rect(self) -> Tuple[int, int, int, int]:
+        """
+        Получает прямоугольник камеры.
+        """
+        return self._x, self._y, self._width, self._height
+
+    def get_zoom_factor(self) -> float:
+        return self._zoom_factor

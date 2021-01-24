@@ -26,7 +26,7 @@ class WorldMap:
 
         :return:
         """
-        return self._height, self._width
+        return self._width, self._height
 
     def apply_looping(self, row: int, column: int) -> Tuple[int, int]:
         """
