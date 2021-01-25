@@ -6,8 +6,13 @@ from copy import copy
 from typing import Tuple
 from collections import namedtuple
 
-from src.tile import Tile, NoneTile
+from noise import pnoise3
 
+from random import randint
+
+from src.tile import Tile, NoneTile
+from src.terrain import get_terrain
+from src.biome import get_biome
 
 class WorldMap:
     """
@@ -59,3 +64,12 @@ class WorldMap:
         """
         row, column = self.apply_looping(row, column)
         return copy(self._tiles[row][column])
+
+    def generate(self, biome_seed = random.randint(1, 0xffffff), terrain_seed = random.randint(1, 0xffffff)):
+            for x in range(self._width):
+                for y in range(self._height):
+                    self.gen_biome = int((pnoise3(float(x + 50) * 0.3, float(y + 50) * 0.3,
+                                       biome_seed) + 1) * 128)
+                    self.gen_terrain = int((pnoise3(float(x + 50) * 0.3, float(y + 50) * 0.3,
+                                       terrain_seed) + 1) * 128)
+                    self._tiles[x][y] = Tile(get_biome(gen_biome), get_terrain(gen_terrain))

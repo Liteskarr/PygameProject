@@ -31,3 +31,6 @@ class NoneTerrain(Terrain):
     @staticmethod
     def get_movement_cost() -> int:
         return 1
+
+def get_terrain(x):
+    pass
