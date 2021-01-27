@@ -1,11 +1,9 @@
-"""
-TODO: То, зачем это нужно.
-"""
-
 from copy import copy
 from typing import List, Union
 
+from src.player import Player
 from src.unit_type import UnitType
+from src.unit_type_resource import UnitTypeResource
 from src.pow_modifier import POWModifier, filter_overdue_modifiers
 
 
@@ -14,12 +12,20 @@ class Unit:
     Класс, представляющий юнита на игровом поле.
     """
 
-    def __init__(self, unit_type: Union[UnitType, type]):
+    def __init__(self, unit_type: Union[UnitType, type], owner: Player):
         """
         :param unit_type: Тип юнита.
+        :param owner: Владелец юнита.
         """
         self._unit_type = unit_type
         self._modifiers = []
+        self._owner = owner
+
+    def get_owner(self) -> Player:
+        """
+        Возвращает владельца юнита.
+        """
+        return self._owner
 
     def get_default_pow(self) -> int:
         """
@@ -51,6 +57,11 @@ class Unit:
     def next_turn(self, current_turn: int):
         """
         Вызывается каждый ход для того, чтобы обновить вещи, зависимые от времени.
-        :param current_turn:
         """
         self.update_modifiers(current_turn)
+
+    def get_resource(self) -> UnitTypeResource:
+        """
+        Возвращает ресурсы для визуализации юнита на поле.
+        """
+        return self._unit_type.get_resource()
