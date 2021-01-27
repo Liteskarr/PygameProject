@@ -10,8 +10,8 @@ class Player:
 
     name: str
 
-    resources: int
-    manpower: int
+    resources: int = 0
+    manpower: int = 0
 
     def could_manage(self, obj_owner):
         return self == obj_owner
