@@ -13,7 +13,8 @@ class POWModifierKind(Enum):
     """
     Перечисление всех игровых модификаторов.
     """
-
+    # Модификатор, не имеющий конкретного типа, но существующий.
+    NONE = auto()
     # Урон, полученный за предыдущие битвы.
     DAMAGE = auto()
     # Модификатор местности.
@@ -32,11 +33,11 @@ class POWModifier:
     Класс-контейнер для данных модификатора.
     """
 
-    kind: POWModifierKind
     eternal: bool
     duration: int
     from_turn: int
     value: int
+    kind: POWModifierKind = POWModifierKind.NONE
 
     def is_valid(self, current_turn: int) -> bool:
         """
@@ -53,14 +54,11 @@ class NonePOWModifier(POWModifier):
     Класс-заглушка для пустых модификаторов, которые могут быть использованы в некоторых классах.
     """
 
-    king = None
     eternal = False
     duration = 0
     from_turn = 0
     value = 0
-
-    def __init__(self):
-        pass
+    kind: POWModifierKind = POWModifierKind.NONE
 
     def is_valid(self, current_turn: int) -> bool:
         return False
