@@ -54,10 +54,10 @@ class NonePOWModifier(POWModifier):
     Класс-заглушка для пустых модификаторов, которые могут быть использованы в некоторых классах.
     """
 
-    eternal = False
-    duration = 0
-    from_turn = 0
-    value = 0
+    eternal: bool = False
+    duration: int = 0
+    from_turn: int = 0
+    value: int = 0
     kind: POWModifierKind = POWModifierKind.NONE
 
     def is_valid(self, current_turn: int) -> bool:
