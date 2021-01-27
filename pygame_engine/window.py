@@ -1,5 +1,5 @@
 """
-Удобное взаимодейстие с окном приложения без использования pygame напрямую
+Удобное взаимодействие с окном приложения без использования pygame напрямую
 Реализует все необходимые функции.
 """
 
@@ -15,6 +15,10 @@ class Window:
     def init(width: int, height: int, title: str = 'Game'):
         pygame.display.set_mode((width, height))
         pygame.display.set_caption(title)
+
+    @staticmethod
+    def toggle_fullscreen():
+        pygame.display.toggle_fullscreen()
 
     @staticmethod
     def set_size(width: int, height: int):
