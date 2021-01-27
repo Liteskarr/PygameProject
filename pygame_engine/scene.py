@@ -10,6 +10,10 @@ from pygame_engine.signal import Signal
 
 
 class Scene:
+    # Time in seconds between two last updates.
+    delta_time_m: int = 0
+    delta_time_s: float = 0
+
     def on_starting(self):
         """
         Вызывается при первом запуске сцены.
