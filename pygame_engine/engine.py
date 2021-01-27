@@ -1,6 +1,7 @@
 """
-Главный статический класс, отвечащий за связывание сцен и API pygame'а.
+Главный статический класс, отвечающий за связывание сцен и API pygame'а.
 """
+from typing import NoReturn
 
 import pygame
 
@@ -50,11 +51,14 @@ class Engine:
                 Engine._current_scene.on_key_up(event.key, event.mod)
             elif event.type == pygame.KEYDOWN:
                 Engine._current_scene.on_key_down(event.unicode, event.key, event.mod)
-        Engine._current_scene.on_updating(Engine.clock.tick(Engine.target_fps))
+        delta_time = Engine.clock.tick(Engine.target_fps)
+        Engine._current_scene.on_updating(Engine.clock.tick(Engine.target_fps) / 1000)
+        Engine._current_scene.delta_time_m = delta_time
+        Engine._current_scene.delta_time_s = delta_time / 1000
         pygame.display.update()
 
     @staticmethod
-    def run():
+    def run() -> NoReturn:
         """
         Запускает игру.
         """
