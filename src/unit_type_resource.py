@@ -1,4 +1,7 @@
+import pygame
+
+
 class UnitTypeResource:
     @staticmethod
-    def get_icon_path() -> str:
+    def get_icon() -> pygame.Surface:
         raise NotImplementedError()
