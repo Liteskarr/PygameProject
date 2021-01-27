@@ -19,4 +19,4 @@ class Tile:
 
 class NoneTile(Tile):
     def __init__(self):
-        super().__init__(NoneBiome, NoneTerrain)
+        super().__init__(NoneBiome(), NoneTerrain())
