@@ -1,3 +1,7 @@
+"""
+Точка входа в программу.
+"""
+
 import pygame
 
 from pygame_engine.engine import Engine
@@ -7,7 +11,7 @@ from src.game_scene import GameScene
 
 
 def main():
-    Window.init(800, 600, 'TBMM')
+    Window.init(600, 400, 'TBMM')
     Engine.set_scene(GameScene())
     Engine.run()
 
