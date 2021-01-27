@@ -1,5 +1,6 @@
 """
-TODO: Документации.
+Камера - абстракция, помогающая рисовать объекты на экране, учитывая их
+относительные координаты.
 """
 
 from typing import Tuple
@@ -35,11 +36,19 @@ class Camera:
         return self._x <= x <= self._x + self._width and self._y <= y <= self._y + self._height
 
     def set_zoom_factor(self, zoom_factor: float):
-        self._zoom_factor = zoom_factor
+        """
+        Устанавливает модификатор приближения равным zoom_factor.
+        Контролирует то, что модификатор не может быть отрицательным.
+        """
+        self._zoom_factor = max(zoom_factor, 0)
 
     def modify_zoom_factor(self, delta_zf: float):
+        """
+        Изменить модификатор приближения на delta_zf.
+        Контролирует то, что модификатор не может быть отрицательным.
+        """
         self._zoom_factor += delta_zf
-        self._zoom_factor = max(0, self._zoom_factor)
+        self._zoom_factor = max(self._zoom_factor, 0)
 
     def move(self, x: int, y: int):
         """
@@ -88,4 +97,7 @@ class Camera:
         return self._x, self._y, self._width, self._height
 
     def get_zoom_factor(self) -> float:
+        """
+        Получить модификатор приближения камеры.
+        """
         return self._zoom_factor
