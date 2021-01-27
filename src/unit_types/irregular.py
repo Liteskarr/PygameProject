@@ -1,7 +1,9 @@
 """
 TODO: Доки ко все тута.
 """
+from typing import Union
 
+from src.unit_types_resources.irregular import IrregularTypeResource
 from src.pow_modifier import POWModifier, POWModifierKind
 from src.unit_group_container import UnitGroupsContainer
 from src.unit_groups.infantry import InfantryGroup
@@ -33,3 +35,7 @@ class IrregularType(UnitType):
     @staticmethod
     def on_defending_against(current_turn: int, groups: UnitGroupsContainer) -> POWModifier:
         return POWModifier(POWModifierKind.DEFENCIVE, False, 0, current_turn, 0)
+
+    @staticmethod
+    def get_resource() -> Union[IrregularTypeResource, type]:
+        return IrregularTypeResource
