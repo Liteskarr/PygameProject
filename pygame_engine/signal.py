@@ -6,12 +6,13 @@ from typing import Callable
 
 
 class Signal:
-    def __init__(self):
+    def __init__(self, *types):
+        self._types = types
         self._listeners = []
 
-    def emit(self, *args, **kwargs):
+    def emit(self, *args):
         for listener in self._listeners:
-            listener(*args, **kwargs)
+            listener(*args)
 
     def connect(self, listener: Callable):
         self._listeners.append(listener)
