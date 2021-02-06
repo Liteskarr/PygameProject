@@ -4,7 +4,7 @@ from typing import List, Union
 from src.player import Player
 from src.unit_type import UnitType
 from src.unit_type_resource import UnitTypeResource
-from src.pow_modifier import POWModifier, filter_overdue_modifiers
+from src.pow_modifier import POWModifier, filter_overdue_modifiers, get_final_pow
 
 
 class Unit:
@@ -20,6 +20,16 @@ class Unit:
         self._unit_type = unit_type
         self._modifiers = []
         self._owner = owner
+        self._moving_points = self.get_default_moving_points()
+
+    def reset_moving_points(self):
+        self._moving_points = self.get_default_moving_points()
+
+    def get_moving_points(self) -> int:
+        return self._moving_points
+
+    def get_default_moving_points(self) -> int:
+        return self._unit_type.get_default_moving_points()
 
     def get_owner(self) -> Player:
         """
@@ -58,10 +68,29 @@ class Unit:
         """
         Вызывается каждый ход для того, чтобы обновить вещи, зависимые от времени.
         """
+        self.reset_moving_points()
         self.update_modifiers(current_turn)
+
+    def count_pow(self) -> int:
+        return get_final_pow(self.get_default_pow(), self.get_all_modifiers())
+
+    def count_priority(self) -> int:
+        return 0
 
     def get_resource(self) -> UnitTypeResource:
         """
         Возвращает ресурсы для визуализации юнита на поле.
         """
         return self._unit_type.get_resource()
+
+    def is_peaceful(self):
+        raise NotImplementedError()
+
+    def decrease_moving_points(self, distance: int):
+        self._moving_points -= distance
+
+    def use_range_attack(self) -> bool:
+        raise NotImplementedError()
+
+    def get_vision_radius(self) -> int:
+        return 1

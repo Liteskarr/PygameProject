@@ -4,7 +4,7 @@ TODO: Написать то, зачем это нужно.
 
 from src.pow_modifier import POWModifier
 from src.unit_type_resource import UnitTypeResource
-from src.unit_group_container import UnitGroupsContainer
+from src.unit_groups_container import UnitGroupsContainer
 
 
 class UnitType:
@@ -45,6 +45,13 @@ class UnitType:
     def on_defending_against(current_turn: int, groups: UnitGroupsContainer) -> POWModifier:
         """
         Возвращает модификатор к POW для данного юнита в защите против юнита, имеющего данные группы.
+        """
+        raise NotImplementedError()
+
+    @staticmethod
+    def is_peaceful() -> bool:
+        """
+        Определяет, является ли данный юнит мирным.
         """
         raise NotImplementedError()
 

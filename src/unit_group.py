@@ -7,4 +7,8 @@ class UnitGroup:
     """
     Абстракция определенной группы юнитов.
     """
-    pass
+
+    @staticmethod
+    def get_priority() -> int:
+        raise NotImplementedError()
+
