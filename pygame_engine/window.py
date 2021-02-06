@@ -12,8 +12,8 @@ class Window:
     fill_color: pygame.Color = pygame.Color('black')
 
     @staticmethod
-    def init(width: int, height: int, title: str = 'Game'):
-        pygame.display.set_mode((width, height))
+    def init(width: int, height: int, title: str = 'Game', flags=0):
+        pygame.display.set_mode((width, height), flags)
         pygame.display.set_caption(title)
 
     @staticmethod
