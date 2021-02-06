@@ -41,3 +41,6 @@ class UnitGroupsContainer:
         """
         if is_group(group):
             return group in self._groups
+
+    def count_priority(self) -> int:
+        return sum(map(lambda x: x.get_priority(), self._groups))
