@@ -5,7 +5,7 @@ from typing import Union
 
 from src.unit_types_resources.irregular import IrregularTypeResource
 from src.pow_modifier import POWModifier, POWModifierKind
-from src.unit_group_container import UnitGroupsContainer
+from src.unit_groups_container import UnitGroupsContainer
 from src.unit_groups.infantry import InfantryGroup
 from src.unit_groups.light import LightGroup
 from src.unit_type import UnitType
@@ -30,11 +30,11 @@ class IrregularType(UnitType):
 
     @staticmethod
     def on_attacking_against(current_turn: int, groups: UnitGroupsContainer) -> POWModifier:
-        return POWModifier(POWModifierKind.ATTACKING, False, 0, current_turn, 0)
+        return POWModifier(False, 0, current_turn, 0, POWModifierKind.ATTACKING)
 
     @staticmethod
     def on_defending_against(current_turn: int, groups: UnitGroupsContainer) -> POWModifier:
-        return POWModifier(POWModifierKind.DEFENCIVE, False, 0, current_turn, 0)
+        return POWModifier(False, 0, current_turn, 0, POWModifierKind.DEFENCIVE)
 
     @staticmethod
     def get_resource() -> Union[IrregularTypeResource, type]:
