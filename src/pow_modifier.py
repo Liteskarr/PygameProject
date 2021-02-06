@@ -25,6 +25,8 @@ class POWModifierKind(Enum):
     DEFENCIVE = auto()
     # Модификатор атаки
     ATTACKING = auto()
+    # Модификатор дезорганизации.
+    DISORGANIZATION = auto()
 
 
 @dataclass
@@ -59,6 +61,12 @@ class NonePOWModifier(POWModifier):
     from_turn: int = 0
     value: int = 0
     kind: POWModifierKind = POWModifierKind.NONE
+
+    def __init__(self):
+        """
+        Делает необязательным указание значений в инициализаторе.
+        """
+        pass
 
     def is_valid(self, current_turn: int) -> bool:
         return False
