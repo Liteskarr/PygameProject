@@ -28,6 +28,13 @@ class UnitType:
         raise NotImplementedError()
 
     @staticmethod
+    def count_priority() -> int:
+        """
+        Возвращает приоритет юнитов в клетке.
+        """
+        raise NotImplementedError()
+
+    @staticmethod
     def get_default_moving_points() -> int:
         """
         Возвращает дефолтное количество очков движения для данного типа юитов.
@@ -52,6 +59,20 @@ class UnitType:
     def is_peaceful() -> bool:
         """
         Определяет, является ли данный юнит мирным.
+        """
+        raise NotImplementedError()
+
+    @staticmethod
+    def use_range_attack() -> bool:
+        """
+        Определяет, является ли атака юнита дистанционной.
+        """
+        raise NotImplementedError()
+
+    @staticmethod
+    def get_vision_radius() -> int:
+        """
+        Возвращает радиус обзора данного типа юнитов.
         """
         raise NotImplementedError()
 

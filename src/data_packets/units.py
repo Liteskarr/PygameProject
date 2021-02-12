@@ -9,14 +9,14 @@ class UnitChosen(DataPacketType):
 
 
 class UnitMoved(DataPacketType):
-    args_type: Type = namedtuple('Positions', ['frow', 'fcolumn', 'fpos', 'trow', 'tcolumn'])
+    args_type: Type = namedtuple('Positions', ['frow', 'fcolumn', 'fpos', 'trow', 'tcolumn', 'unit'])
 
 
 class UnitLeft(DataPacketType):
     pass
 
 
-class VisionMapUpdated(DataPacketType):
+class UnitVisionMapUpdated(DataPacketType):
     args_type: Type = set
 
 

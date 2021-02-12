@@ -3,13 +3,17 @@ from typing import Tuple
 import pygame
 
 from src.camera import Camera
-from src.game_component import GameComponent
 from src.data_packet import DataPacket
-from src.data_packet_types.all import (ClickedAtCell,
-                                       ClickedAtUnit,
-                                       ClickedAtAbyss,
-                                       RequestCellSizeLimit,
-                                       CameraUpdated, SelectionsCanceled, ShapeUpdated, CellSizeUpdated)
+from src.data_packets.all import (ClickedAtCell,
+                                  ClickedAtUnit,
+                                  ClickedAtAbyss,
+                                  RequestCellSizeLimit,
+                                  CameraUpdated,
+                                  SelectionsCanceled,
+                                  ShapeUpdated,
+                                  CellSizeUpdated,
+                                  ClickedAtCity)
+from src.game_component import GameComponent
 
 
 class InputComponent(GameComponent):
@@ -64,9 +68,13 @@ class InputComponent(GameComponent):
                                                                      self.process_cell_size_limit_getting_response,
                                                                      row, column))
                 rx, ry = self.get_cell_screen_position(row, column)
-                if (mx - rx) // self._cell_size < self._cell_size_limit:
+
+                unit_position = self._cell_size_limit * (mx - rx) // self._cell_size
+                if unit_position < self._cell_size_limit and (my - ry) <= self._cell_size // 2:
                     self.push_packet(DataPacket.fast_message_construct(ClickedAtUnit, row, column,
-                                                                       (mx - rx) // self._cell_size))
+                                                                       unit_position))
+                if mx - rx <= self._cell_size // 2 <= my - ry <= self._cell_size:
+                    self.push_packet(DataPacket.fast_message_construct(ClickedAtCity, row, column))
             else:
                 self.push_packet(DataPacket.fast_message_construct(ClickedAtAbyss))
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_MIDDLE:

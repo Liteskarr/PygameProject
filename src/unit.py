@@ -4,7 +4,7 @@ from typing import List, Union
 from src.player import Player
 from src.unit_type import UnitType
 from src.unit_type_resource import UnitTypeResource
-from src.pow_modifier import POWModifier, filter_overdue_modifiers, get_final_pow
+from src.pow_modifier import POWModifier, filter_overdue_modifiers, get_final_pow, POWModifierKind
 
 
 class Unit:
@@ -71,26 +71,35 @@ class Unit:
         self.reset_moving_points()
         self.update_modifiers(current_turn)
 
+    def after_attack(self):
+        self._moving_points = 0
+
+    def is_alive(self) -> bool:
+        return self.count_pow() > 0
+
+    def set_damage(self, damage: int, turn: int):
+        self.apply_modifier(POWModifier(False, 2, turn, -damage, POWModifierKind.DAMAGE))
+
     def count_pow(self) -> int:
         return get_final_pow(self.get_default_pow(), self.get_all_modifiers())
 
     def count_priority(self) -> int:
-        return 0
+        return self._unit_type.count_priority()
+
+    def is_peaceful(self):
+        return self._unit_type.is_peaceful()
+
+    def decrease_moving_points(self, distance: int):
+        self._moving_points -= distance
+
+    def use_range_attack(self) -> bool:
+        return self._unit_type.use_range_attack()
+
+    def get_vision_radius(self) -> int:
+        return self._unit_type.get_vision_radius()
 
     def get_resource(self) -> UnitTypeResource:
         """
         Возвращает ресурсы для визуализации юнита на поле.
         """
         return self._unit_type.get_resource()
-
-    def is_peaceful(self):
-        raise NotImplementedError()
-
-    def decrease_moving_points(self, distance: int):
-        self._moving_points -= distance
-
-    def use_range_attack(self) -> bool:
-        raise NotImplementedError()
-
-    def get_vision_radius(self) -> int:
-        return 1

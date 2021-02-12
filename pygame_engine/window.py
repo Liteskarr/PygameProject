@@ -21,6 +21,10 @@ class Window:
         pygame.display.toggle_fullscreen()
 
     @staticmethod
+    def set_icon(icon_surface: pygame.Surface):
+        pygame.display.set_icon(icon_surface)
+
+    @staticmethod
     def set_size(width: int, height: int):
         pygame.display.set_mode((width, height))
 

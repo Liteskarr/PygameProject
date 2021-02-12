@@ -10,7 +10,7 @@ class NeedsGameSaving(DataPacketType):
 
 
 class NeedsGameClosing(DataPacketType):
-    args_type: Type = namedtuple('ClosingMessage', ['exit_code', 'message'])
+    pass
 
 
 class NeedsNextTurn(DataPacketType):
@@ -40,3 +40,6 @@ class ShapeUpdated(DataPacketType):
 class CellSizeUpdated(DataPacketType):
     args_type: Type = int
 
+
+class PlayerUpdated(DataPacketType):
+    args_type: Type = namedtuple('Context', ['turn', 'player'])

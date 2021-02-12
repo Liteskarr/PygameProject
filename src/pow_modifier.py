@@ -48,7 +48,7 @@ class POWModifier:
         :param current_turn: Текущий ход.
         :return: True, если действует, иначе False.
         """
-        return current_turn - self.from_turn - 1 >= self.duration or self.eternal
+        return current_turn - self.from_turn + 1 <= self.duration or self.eternal
 
 
 class NonePOWModifier(POWModifier):

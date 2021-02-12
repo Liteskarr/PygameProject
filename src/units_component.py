@@ -1,26 +1,38 @@
+import os
+import pathlib
+import shutil
 from collections import defaultdict, deque
+from copy import copy
 from math import exp, ceil
 from typing import List, Tuple, Dict, Iterator, Union, Set
+import pickle
 
 import pygame
 
 from src.camera import Camera
 from src.data_packet import DataPacket
-from src.data_packet_types.all import (ClickedAtCell,
-                                       ClickedAtUnit,
-                                       ConsoleCommand,
-                                       ConsoleMessage,
-                                       ClickedAtAbyss,
-                                       RequestCellSizeLimit,
-                                       RequestMovementCost,
-                                       UnitChosen,
-                                       UnitMoved,
-                                       UnitLeft,
-                                       VisionMapUpdated, NextTurn, NextPlayer, SelectionsCanceled, ShapeUpdated)
+from src.data_packets.all import (ClickedAtCell,
+                                  ClickedAtUnit,
+                                  ConsoleCommand,
+                                  ConsoleMessage,
+                                  ClickedAtAbyss,
+                                  RequestCellSizeLimit,
+                                  RequestMovementCost,
+                                  UnitChosen,
+                                  UnitMoved,
+                                  UnitLeft,
+                                  UnitVisionMapUpdated,
+                                  NextTurn,
+                                  NextPlayer,
+                                  SelectionsCanceled,
+                                  ShapeUpdated,
+                                  UnitCouldSpawned,
+                                  PlayerUpdated)
 from src.game_component import GameComponent
 from src.player import Player
 from src.pow_modifier import POWModifierKind, POWModifier, get_final_pow
 from src.unit import Unit
+from src.units_building import COST_BY_TYPE
 
 
 def get_damage(unit_pow: int, enemy_pow: int) -> int:
@@ -44,7 +56,7 @@ class UnitsContainer:
         if len(self) == self.size_limit:
             raise OverflowError('UnitsContainer is full now!')
         self._units.append(unit)
-        self._units.sort(key=lambda u: (u.count_priority(), u.get_default_pow()), reverse=True)
+        self._units.sort(key=lambda u: (u.count_priority(), u.count_pow()), reverse=True)
 
     def erase(self, index: int):
         self._units.pop(index)
@@ -67,6 +79,9 @@ class UnitsContainer:
     def back(self) -> Unit:
         return self._units[-1]
 
+    def full(self) -> bool:
+        return self.size_limit == len(self._units)
+
     def __len__(self):
         return len(self._units)
 
@@ -76,6 +91,7 @@ class UnitsComponent(GameComponent):
         self._width: int
         self._height: int
         self._player: Player
+        self._turn: int
         self._units: Dict[Tuple[int, int], UnitsContainer] = defaultdict(UnitsContainer)
         self._chosen_unit: Union[Tuple[int, int, int], None] = None
         self._moving_cost: Dict[Tuple[int, int], int] = defaultdict(int)
@@ -102,6 +118,8 @@ class UnitsComponent(GameComponent):
             self.handle_abyss_choosing()
         elif packet.type is ShapeUpdated:
             self.handle_shape_updating(packet)
+        elif packet.type is UnitCouldSpawned:
+            self.try_to_spawn_unit(packet)
 
     def handle_shape_updating(self, packet: DataPacket):
         self._width, self._height = packet.args
@@ -134,6 +152,7 @@ class UnitsComponent(GameComponent):
         packet.response_function(self.get_units_container(*packet.args).size_limit)
 
     def handle_next_turn(self, packet: DataPacket):
+        self._turn = packet.args.turn
         for container in self._units.values():
             for unit in container.iterator():
                 unit.next_turn(packet.args.turn)
@@ -151,6 +170,21 @@ class UnitsComponent(GameComponent):
     def process_cell_movement_cost_getting_response(self, row: int, column: int, value: int):
         self._moving_cost[row, column] = value
 
+    def try_to_spawn_unit(self, packet: DataPacket):
+        row, column, unit_type, owner = packet.args
+        manpower, resources = COST_BY_TYPE[unit_type]
+        if (
+                owner.manpower >= manpower
+                and
+                owner.resources >= resources
+                and
+                not self.get_units_container(row, column).full()
+        ):
+            owner.manpower -= manpower
+            owner.resources -= resources
+            self.add_unit(row, column, Unit(unit_type, owner))
+            self.push_packet(DataPacket.fast_message_construct(PlayerUpdated, self._turn, owner))
+
     def get_unit(self, row: int, column: int, pos: int):
         return self._units[row, column].get(pos)
 
@@ -158,13 +192,13 @@ class UnitsComponent(GameComponent):
         return self._units[row, column]
 
     def add_unit(self, row: int, column: int, unit: Unit):
-        self._units[row, column].add(unit)
+        self._units[row, column].add(copy(unit))
         self.update_vision_map()
 
     def move_unit(self, frow: int, fcolumn: int, fpos: int, trow: int, tcolumn: int):
         unit = self._units[frow, fcolumn].pop(fpos)
         self._units[trow, tcolumn].add(unit)
-        self.push_packet(DataPacket.fast_message_construct(UnitMoved, frow, fcolumn, fpos, trow, tcolumn))
+        self.push_packet(DataPacket.fast_message_construct(UnitMoved, frow, fcolumn, fpos, trow, tcolumn, unit))
 
     def pop_unit(self, row: int, column: int, pos: int):
         return self.get_units_container(row, column).pop(pos)
@@ -184,19 +218,19 @@ class UnitsComponent(GameComponent):
                 break
             for dr in range(-1, 2):
                 for dc in range(-1, 2):
-                    if not(dr == dc == 0):
+                    if not (dr == dc == 0):
                         drow, dcolumn = row + dr, column + dc
                         if 0 <= drow < self._height and 0 <= dcolumn < self._width:
                             if (drow, dcolumn) not in distance:
                                 distance[drow, dcolumn] = distance[row, column] - 1
                                 queue.append((drow, dcolumn))
             result = set([cell for cell in distance.keys()])
-            self.push_packet(DataPacket.fast_message_construct(VisionMapUpdated, result))
+            self.push_packet(DataPacket.fast_message_construct(UnitVisionMapUpdated, result))
 
     def get_distances_from(self, row: int, column: int, owner: Player) -> Dict[Tuple[int, int], int]:
         self.push_packet(DataPacket.fast_request_constructor(RequestMovementCost,
                                                              self.process_cell_movement_cost_getting_response))
-        local_inf = 2**64
+        local_inf = 2 ** 64
         distance: Dict[Tuple[int, int], int] = {(row, column): 0}
         used: Set[Tuple[int, int]] = set()
         while True:
@@ -244,6 +278,7 @@ class UnitsComponent(GameComponent):
             return
         if len(tcontainer) and tcontainer.front().get_owner() != funit.get_owner():
             tunit = tcontainer.front()
+            flag_of_die = False
             if not tunit.is_peaceful():
                 fpow = get_final_pow(funit.get_default_pow(), funit.get_all_modifiers())
                 tpow = get_final_pow(tunit.get_default_pow(), tunit.get_all_modifiers())
@@ -257,17 +292,18 @@ class UnitsComponent(GameComponent):
                                                      tdamage // 4,
                                                      POWModifierKind.DISORGANIZATION))
                 else:
-                    funit.set_damage(fdamage)
-                    tunit.set_damage(tdamage)
+                    funit.set_damage(fdamage, self._turn)
+                    tunit.set_damage(tdamage, self._turn)
+                funit.after_attack()
                 if not funit.is_alive():
                     self.pop_unit(frow, fcolumn, fpos)
+                    flag_of_die = True
                 if not tunit.is_alive():
                     self.pop_unit(trow, tcolumn, 0)
-            while (tunit := tcontainer.front()) and tunit.is_peaceful():
+            while len(tcontainer) and (tunit := tcontainer.front()) and tunit.is_peaceful():
                 tcontainer.pop(0)
-            if not len(tcontainer):
+            if not len(tcontainer) and not flag_of_die:
                 self.move_unit(frow, fcolumn, fpos, trow, tcolumn)
-                funit.decrease_moving_points(distance)
         else:
             if len(tcontainer) < tcontainer.size_limit:
                 self.move_unit(frow, fcolumn, fpos, trow, tcolumn)
@@ -298,7 +334,7 @@ class UnitsComponent(GameComponent):
             self.push_packet(DataPacket(
                 sender=self,
                 type=ConsoleMessage,
-                args=ConsoleMessage.args_type('Произошла ошибка!')
+                args=ConsoleMessage.args_type(f'Произошла ошибка!{command}')
             ))
 
     def render_cell(self,
@@ -308,14 +344,22 @@ class UnitsComponent(GameComponent):
                     column: int,
                     camera: Camera,
                     cell_rect: pygame.Rect):
-        unit_size = cell_size // 2
+        unit_size = cell_size // max(2, len(self.get_units_container(row, column)))
         for pos, unit in enumerate(self.get_units_container(row, column).iterator()):
             unit_surface = self.get_unit_render(unit_size, row, column, pos)
             surface.blit(unit_surface, (cell_rect[0] + cell_size // 2 * pos + 1, cell_rect[1] + 1))
 
     def load(self, saving: str):
-        pass
+        units = f'{saving}/units'
+        for file in os.listdir(units):
+            row, column = map(int, file.split('_'))
+            container = pickle.load(open(f'{units}/{file}', 'rb'))
+            self._units[row, column] = container
 
     def save(self, saving: str):
-        pass
-
+        units = f'{saving}/units'
+        if os.path.exists(units):
+            shutil.rmtree(units)
+        pathlib.Path(units).mkdir(parents=True, exist_ok=True)
+        for cell, container in self._units.items():
+            pickle.dump(container, open(f'{units}/{cell[0]}_{cell[1]}', 'wb+'))

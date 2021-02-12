@@ -18,7 +18,7 @@ class Engine:
     @staticmethod
     def set_scene(new_scene: Scene):
         """
-        Устанавливат текущую сцену.
+        Устанавливает текущую сцену.
         """
         Engine._current_scene = new_scene
         Engine._current_scene.on_starting()
@@ -52,7 +52,7 @@ class Engine:
             elif event.type == pygame.KEYDOWN:
                 Engine._current_scene.on_key_down(event.unicode, event.key, event.mod)
         delta_time = Engine.clock.tick(Engine.target_fps)
-        Engine._current_scene.on_updating(Engine.clock.tick(Engine.target_fps) / 1000)
+        Engine._current_scene.on_updating(delta_time / 1000)
         Engine._current_scene.delta_time_m = delta_time
         Engine._current_scene.delta_time_s = delta_time / 1000
         pygame.display.update()

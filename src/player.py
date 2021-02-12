@@ -19,6 +19,9 @@ class Player:
     def could_see_as(self, obj_owner):
         return self == obj_owner
 
+    def __eq__(self, other: "Player"):
+        return self.name == other.name
+
 
 class God(Player):
     def could_manage(self, obj_owner):

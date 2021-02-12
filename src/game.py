@@ -10,14 +10,17 @@ from itertools import cycle
 from typing import List, Tuple
 
 import pygame
+
+from pygame_engine.engine import Engine
 from pygame_engine.window import Window
 
 from src.camera import Camera
 from src.data_packet import DataPacket
-from src.data_packet_types.all import (NeedsGameSaving,
-                                       NeedsGameClosing,
-                                       NextTurn,
-                                       NextPlayer, NeedsNextTurn, CameraUpdated, ShapeUpdated, CellSizeUpdated)
+from src.data_packets.all import (NeedsGameSaving,
+                                  NeedsGameClosing,
+                                  NextTurn,
+                                  NextPlayer, NeedsNextTurn, CameraUpdated, ShapeUpdated, CellSizeUpdated,
+                                  PlayerUpdated)
 from src.game_component import GameComponent
 from src.player import Player
 
@@ -40,6 +43,7 @@ class Game:
         self._players: List
 
     def _init_system(self):
+        self.main_menu_scene_cls = None
         self._components: List = []
 
     def init(self,
@@ -47,13 +51,16 @@ class Game:
              sys_name: str,
              width: int,
              height: int,
-             camera: Camera,
+             camera: Camera = None,
              cell_size: int = 40,
-             players: List[Player] = None):
+             players: List[Player] = None,
+             main_menu_scene_cls: type = None):
+        self._main_menu_scene_cls = main_menu_scene_cls
         self.set_name(name)
         self.set_sys_name(sys_name)
         self.set_cell_size(cell_size)
-        self.set_camera(camera)
+        if camera is not None:
+            self.set_camera(camera)
         self.set_shape(width, height)
         self.set_players_list(players)
         self.restart()
@@ -79,12 +86,13 @@ class Game:
             components.load(saving)
         self.next_player()
 
-    def save(self, saving: str):
+    def save(self, saving: str, prefix: str = '../'):
         """
         Сохраняет игру в файловую систему.
+        :param prefix:
         :param saving: Имя сохранения.
         """
-        saving = f'../savings/{saving}'
+        saving = f'{prefix}savings/{saving}'
         base = f'{saving}/base'
         pathlib.Path(saving).mkdir(parents=True, exist_ok=True)
         pathlib.Path(base).mkdir(parents=True, exist_ok=True)
@@ -116,13 +124,20 @@ class Game:
 
     def handle_packet(self, packet: DataPacket):
         if packet.type is NeedsGameClosing:
-            if packet.args.exit_code:
-                print(packet.args.message)
-            quit(packet.args.exit_code)
+            if self.main_menu_scene_cls is None:
+                quit(0)
+            else:
+                Engine.set_scene(self.main_menu_scene_cls())
         elif packet.type is NeedsGameSaving:
             self.save(self.get_sys_name())
         elif packet.type is NeedsNextTurn:
             self.next_player()
+        elif packet.type is PlayerUpdated:
+            self._handle_player_updating(packet)
+
+    def _handle_player_updating(self, packet: DataPacket):
+        index = self._players.index(packet.args.player)
+        self.get_players_list()[index] = packet.args.player
 
     def restart(self):
         self._current_player = -1

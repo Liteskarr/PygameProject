@@ -3,7 +3,7 @@ TODO: Доки ко все тута.
 """
 from typing import Union
 
-from src.unit_types_resources.irregular import IrregularTypeResource
+from src.units_resources.irregular import IrregularTypeResource
 from src.pow_modifier import POWModifier, POWModifierKind
 from src.unit_groups_container import UnitGroupsContainer
 from src.unit_groups.infantry import InfantryGroup
@@ -39,3 +39,19 @@ class IrregularType(UnitType):
     @staticmethod
     def get_resource() -> Union[IrregularTypeResource, type]:
         return IrregularTypeResource
+
+    @staticmethod
+    def is_peaceful() -> bool:
+        return False
+
+    @staticmethod
+    def use_range_attack() -> bool:
+        return False
+
+    @staticmethod
+    def get_vision_radius() -> int:
+        return 1
+
+    @staticmethod
+    def count_priority() -> int:
+        return IrregularType.get_groups().count_priority()
