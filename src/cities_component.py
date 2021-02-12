@@ -18,7 +18,8 @@ from src.data_packets.all import (NextTurn,
                                   ClickedAtAbyss,
                                   ClickedAtCell,
                                   PlayerUpdated,
-                                  UnitMoved)
+                                  UnitMoved,
+                                  NeedsPlayerChecking, SelectionsCanceled)
 from src.player import Player
 
 
@@ -32,8 +33,6 @@ class CitiesComponent(GameComponent):
     def handle_packet(self, packet: DataPacket):
         if packet.type is ClickedAtCity:
             self.handle_clicking_at_city(packet)
-        elif packet.type is ClickedAtCell:
-            self.handle_city_left(packet)
         elif packet.type is CityChosen:
             self.handle_city_choosing(packet)
         elif packet.type is NextPlayer:
@@ -42,6 +41,17 @@ class CitiesComponent(GameComponent):
             self.handle_next_turn(packet)
         elif packet.type is UnitMoved:
             self.handle_unit_moving(packet)
+        elif packet.type is NeedsPlayerChecking:
+            self.handle_player_checking(packet)
+        elif packet.type is SelectionsCanceled:
+            self.handle_city_left(packet)
+
+    def handle_player_checking(self, packet: DataPacket):
+        for city in self._cities.values():
+            if packet.args.player.could_manage(city.get_owner()):
+                packet.response_function(True)
+                return
+        packet.response_function(False)
 
     def handle_unit_moving(self, packet: DataPacket):
         trow, tcolumn, unit = packet.args.trow, packet.args.tcolumn, packet.args.unit
@@ -51,9 +61,7 @@ class CitiesComponent(GameComponent):
 
     def handle_clicking_at_city(self, packet: DataPacket):
         row, column = packet.args
-        if (row, column) not in self._cities:
-            self.handle_city_left(packet)
-        else:
+        if (row, column) in self._cities:
             self.push_packet(DataPacket.fast_message_construct(CityChosen, row, column, self._cities[row, column]))
 
     def handle_city_choosing(self, packet: DataPacket):
@@ -70,6 +78,7 @@ class CitiesComponent(GameComponent):
             ))
 
     def handle_next_player(self, packet: DataPacket):
+        self.push_packet(DataPacket.fast_message_construct(CityLeft))
         self._current_player = packet.args.player
         self.update_vision_map()
 
@@ -101,10 +110,10 @@ class CitiesComponent(GameComponent):
             minor_color = player.minor_color
             major_color = player.major_color
             city_icon = pygame.transform.scale(self._TEXTURE, (cell_size // 2, cell_size // 2))
-            pygame.draw.ellipse(surface, major_color, [cell_rect[0], cell_rect[1] + cell_size // 2,
-                                                       cell_size // 2, cell_size // 2])
-            pygame.draw.ellipse(surface, minor_color, [cell_rect[0], cell_rect[1] + cell_size // 2,
-                                                       cell_size // 2, cell_size // 2], 3)
+            pygame.draw.ellipse(surface, major_color, [cell_rect[0] + 1, cell_rect[1] + cell_size // 2 + 1,
+                                                       cell_size // 2 - 2, cell_size // 2 - 2])
+            pygame.draw.ellipse(surface, minor_color, [cell_rect[0] + 1, cell_rect[1] + cell_size // 2 + 1,
+                                                       cell_size // 2 - 2, cell_size // 2 - 2], 3)
             surface.blit(city_icon, (cell_rect[0], cell_rect[1] + cell_size // 2))
 
     def load(self, saving: str):
