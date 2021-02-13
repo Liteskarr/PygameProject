@@ -77,6 +77,13 @@ class UnitType:
         raise NotImplementedError()
 
     @staticmethod
+    def could_move_after_attacking() -> bool:
+        """
+        Определяет, может ли юнит передвигаться после атаки.
+        """
+        raise NotImplementedError()
+
+    @staticmethod
     def get_resource() -> UnitTypeResource:
         """
         Возвращает класс ресурсов типа юнита.

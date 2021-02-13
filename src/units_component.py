@@ -1,11 +1,11 @@
 import os
 import pathlib
+import pickle
 import shutil
 from collections import defaultdict, deque
 from copy import copy
 from math import exp, ceil
 from typing import List, Tuple, Dict, Iterator, Union, Set
-import pickle
 
 import pygame
 
@@ -14,7 +14,6 @@ from src.data_packet import DataPacket
 from src.data_packets.all import (ClickedAtCell,
                                   ClickedAtUnit,
                                   ConsoleCommand,
-                                  ConsoleMessage,
                                   ClickedAtAbyss,
                                   RequestCellSizeLimit,
                                   RequestMovementCost,
@@ -27,7 +26,8 @@ from src.data_packets.all import (ClickedAtCell,
                                   SelectionsCanceled,
                                   ShapeUpdated,
                                   UnitCouldSpawned,
-                                  PlayerUpdated)
+                                  PlayerUpdated,
+                                  NeedsPlayerChecking)
 from src.game_component import GameComponent
 from src.player import Player
 from src.pow_modifier import POWModifierKind, POWModifier, get_final_pow
@@ -120,6 +120,16 @@ class UnitsComponent(GameComponent):
             self.handle_shape_updating(packet)
         elif packet.type is UnitCouldSpawned:
             self.try_to_spawn_unit(packet)
+        elif packet.type is NeedsPlayerChecking:
+            self.handle_player_checking(packet)
+
+    def handle_player_checking(self, packet: DataPacket):
+        for container in self._units.values():
+            for unit in container.iterator():
+                if packet.args.player.could_manage(unit.get_owner()):
+                    packet.response_function(True)
+                    return
+        packet.response_function(False)
 
     def handle_shape_updating(self, packet: DataPacket):
         self._width, self._height = packet.args
@@ -215,7 +225,7 @@ class UnitsComponent(GameComponent):
         while len(queue):
             row, column = queue.popleft()
             if distance[row, column] == 0:
-                break
+                continue
             for dr in range(-1, 2):
                 for dc in range(-1, 2):
                     if not (dr == dc == 0):
@@ -228,22 +238,23 @@ class UnitsComponent(GameComponent):
             self.push_packet(DataPacket.fast_message_construct(UnitVisionMapUpdated, result))
 
     def get_distances_from(self, row: int, column: int, owner: Player) -> Dict[Tuple[int, int], int]:
-        self.push_packet(DataPacket.fast_request_constructor(RequestMovementCost,
-                                                             self.process_cell_movement_cost_getting_response))
+        self.push_packet(DataPacket.fast_request_construct(RequestMovementCost,
+                                                           self.process_cell_movement_cost_getting_response))
         local_inf = 2 ** 64
         distance: Dict[Tuple[int, int], int] = {(row, column): 0}
         used: Set[Tuple[int, int]] = set()
         while True:
             vertex = row, column
             for r, c in distance.keys():
-                if (r, c) not in used and distance[vertex] > distance[r, c]:
+                if (r, c) not in used and distance[vertex] < distance[r, c]:
                     vertex = r, c
-            if len(distance) > 1 and vertex == (row, column):
-                break
             used.add(vertex)
 
+            if len(distance) > 1 and vertex == (row, column):
+                break
+
             container = self.get_units_container(*vertex)
-            if len(container) and (container.front().get_owner() != owner or owner is None):
+            if len(container) and container.front().get_owner() != owner:
                 continue
 
             for drow in range(-1, 2):
@@ -252,8 +263,9 @@ class UnitsComponent(GameComponent):
                     if drow == dcolumn == 0:
                         continue
                     if 0 <= nrow < self._height and 0 <= ncolumn < self._width:
-                        distance[nrow, ncolumn] = min(distance[vertex] + self._moving_cost[nrow, ncolumn],
-                                                      distance.get((nrow, ncolumn), local_inf))
+                        distance.update({(nrow, ncolumn):
+                                             min(distance[vertex] + self._moving_cost[nrow, ncolumn],
+                                                 distance.get((nrow, ncolumn), local_inf))})
         return distance
 
     def get_distance_between(self,
@@ -285,16 +297,19 @@ class UnitsComponent(GameComponent):
                 fdamage = get_damage(fpow, tpow)
                 tdamage = get_damage(tpow, fpow)
                 if funit.use_range_attack():
-                    tunit.set_damage(tdamage // 2)
+                    tunit.set_damage(tdamage, self._turn)
                     tunit.apply_modifier(POWModifier(False,
                                                      1,
                                                      self.get_game().get_current_turn(),
                                                      tdamage // 4,
                                                      POWModifierKind.DISORGANIZATION))
-                else:
+                    funit.after_attack()
+                elif abs(frow - trow) + abs(fcolumn - tcolumn) <= 2:
                     funit.set_damage(fdamage, self._turn)
                     tunit.set_damage(tdamage, self._turn)
-                funit.after_attack()
+                    if tunit.use_range_attack():
+                        tunit.set_damage(tdamage, self._turn)
+                    funit.after_attack()
                 if not funit.is_alive():
                     self.pop_unit(frow, fcolumn, fpos)
                     flag_of_die = True
@@ -308,6 +323,7 @@ class UnitsComponent(GameComponent):
             if len(tcontainer) < tcontainer.size_limit:
                 self.move_unit(frow, fcolumn, fpos, trow, tcolumn)
                 funit.decrease_moving_points(distance)
+        self.update_vision_map()
 
     def get_unit_render(self,
                         unit_size: int,
@@ -324,18 +340,17 @@ class UnitsComponent(GameComponent):
         minor_color = unit.get_owner().minor_color
         pygame.draw.ellipse(surface, major_color, [0, 0, unit_size - 2, unit_size - 2])
         pygame.draw.ellipse(surface, minor_color, [0, 0, unit_size - 2, unit_size - 2], 3)
+        font = pygame.font.Font(pygame.font.get_default_font(), 256)
+        k = 2.75
+        pow_surface = font.render(f'{unit.count_pow():02d}', True, pygame.Color('white'), pygame.Color('black'))
+        pow_surface = pygame.transform.scale(pow_surface, (int(unit_size / k), int(unit_size / k)))
+        unit_icon.blit(pow_surface, (int((k - 1) * unit_size / k), int((k - 1) * unit_size / k)))
+        moving_surface = font.render(f'{unit.get_moving_points():02d}', True, pygame.Color('white'),
+                                     pygame.Color('black'))
+        moving_surface = pygame.transform.scale(moving_surface, (int(unit_size / k), int(unit_size / k)))
+        unit_icon.blit(moving_surface, (0, int((k - 1) * unit_size / k)))
         surface.blit(unit_icon, (0, 0))
         return surface
-
-    def handle_command(self, command: str):
-        try:
-            raise NotImplementedError()
-        except Exception:
-            self.push_packet(DataPacket(
-                sender=self,
-                type=ConsoleMessage,
-                args=ConsoleMessage.args_type(f'Произошла ошибка!{command}')
-            ))
 
     def render_cell(self,
                     surface: pygame.Surface,

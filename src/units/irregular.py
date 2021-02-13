@@ -1,13 +1,12 @@
 """
-TODO: Доки ко все тута.
+TODO: Доки ко всему тута.
 """
 from typing import Union
 
 from src.units_resources.irregular import IrregularTypeResource
 from src.pow_modifier import POWModifier, POWModifierKind
 from src.unit_groups_container import UnitGroupsContainer
-from src.unit_groups.infantry import InfantryGroup
-from src.unit_groups.light import LightGroup
+from src.unit_groups.all import *
 from src.unit_type import UnitType
 
 
@@ -51,6 +50,10 @@ class IrregularType(UnitType):
     @staticmethod
     def get_vision_radius() -> int:
         return 1
+
+    @staticmethod
+    def could_move_after_attacking() -> bool:
+        return False
 
     @staticmethod
     def count_priority() -> int:

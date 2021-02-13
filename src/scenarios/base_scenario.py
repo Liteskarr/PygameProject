@@ -1,6 +1,10 @@
+import random
+
 import pygame
 
 from src.biomes.all import *
+from src.cities_component import CitiesComponent
+from src.city import City
 from src.game import Game
 from src.player import Player
 from src.scenarios.scenario import Scenario, ScenarioBuilder
@@ -10,8 +14,6 @@ from src.unit import Unit
 from src.units.all import *
 from src.units_component import UnitsComponent
 from src.world_map_component import WorldMapComponent
-from src.cities_component import CitiesComponent
-from src.city import City
 
 
 class BaseScenarioBuilder(ScenarioBuilder):
@@ -55,24 +57,26 @@ class BaseScenarioBuilder(ScenarioBuilder):
         width, height = self._game.get_shape()
         for row in range(height):
             for column in range(width):
-                tile = Tile(TemperateBiome, PlainTerrain)
+                tile = Tile(TemperateBiome, PlainTerrain if random.random() >= 0.3 else HillTerrain)
                 self._world_map.set_tile(row, column, tile)
 
     def init_cities(self):
         self._cities.add_city(0, 0, City(
-            name='Москва',
+            name='Хельмова Падь',
             owner=self.player1,
             manpower_adding=10,
             resources_adding=10
         ))
 
+        self._cities.add_city(9, 9, City(
+            name='Гондор',
+            owner=self.player2,
+            manpower_adding=50,
+            resources_adding=50
+        ))
+
+    def get_prefix(self) -> str:
+        return 'base_scenario_'
+
     def save(self, saving: str):
-        self._game.save(saving, prefix='../../')
-
-
-base_scenario = Scenario("Противостояние", BaseScenarioBuilder())
-
-
-if __name__ == '__main__':
-    base_scenario.builder.build('test', 'test')
-    base_scenario.builder.save('test')
+        self._game.save(saving, prefix='../')

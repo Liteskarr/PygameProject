@@ -2,4 +2,6 @@ from src.unit_group import UnitGroup
 
 
 class ArtilleryGroup(UnitGroup):
-    pass
+    @staticmethod
+    def get_priority() -> int:
+        return 2

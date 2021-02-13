@@ -16,7 +16,7 @@ class DataPacket:
         return packet
 
     @staticmethod
-    def fast_request_constructor(packet_type: "DataPacketType", response_function: Callable, *args, **kwargs):
+    def fast_request_construct(packet_type: "DataPacketType", response_function: Callable, *args, **kwargs):
         packet = DataPacket.fast_message_construct(packet_type, *args, **kwargs)
         packet.response_function = response_function
         return packet

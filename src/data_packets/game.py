@@ -43,3 +43,7 @@ class CellSizeUpdated(DataPacketType):
 
 class PlayerUpdated(DataPacketType):
     args_type: Type = namedtuple('Context', ['turn', 'player'])
+
+
+class NeedsPlayerChecking(DataPacketType):
+    args_type: Type = namedtuple('Turn', ['turn', 'player'])

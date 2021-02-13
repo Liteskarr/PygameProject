@@ -22,6 +22,9 @@ class Player:
     def __eq__(self, other: "Player"):
         return self.name == other.name
 
+    def __hash__(self):
+        return hash(self.name)
+
 
 class God(Player):
     def could_manage(self, obj_owner):

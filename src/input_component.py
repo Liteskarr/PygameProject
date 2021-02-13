@@ -12,7 +12,7 @@ from src.data_packets.all import (ClickedAtCell,
                                   SelectionsCanceled,
                                   ShapeUpdated,
                                   CellSizeUpdated,
-                                  ClickedAtCity)
+                                  ClickedAtCity, NeedsNextTurn)
 from src.game_component import GameComponent
 
 
@@ -58,15 +58,19 @@ class InputComponent(GameComponent):
         return (my + cy) // cell_size, (mx + cx) // cell_size
 
     def handle_event(self, event: pygame.event.Event):
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_SPACE:
+                self.push_packet(DataPacket.fast_message_construct(NeedsNextTurn))
+
         cx, cy, *_ = self._camera.get_rect()
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_LEFT:
             mx, my = event.pos
             row, column = self.get_cell_by_mouse(event.pos)
             if self.validate_cell(row, column):
                 self.push_packet(DataPacket.fast_message_construct(ClickedAtCell, row, column))
-                self.push_packet(DataPacket.fast_request_constructor(RequestCellSizeLimit,
-                                                                     self.process_cell_size_limit_getting_response,
-                                                                     row, column))
+                self.push_packet(DataPacket.fast_request_construct(RequestCellSizeLimit,
+                                                                   self.process_cell_size_limit_getting_response,
+                                                                   row, column))
                 rx, ry = self.get_cell_screen_position(row, column)
 
                 unit_position = self._cell_size_limit * (mx - rx) // self._cell_size

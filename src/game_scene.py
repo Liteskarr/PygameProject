@@ -13,6 +13,7 @@ from src.fog_component import FogComponent
 from src.game import Game
 from src.camera import Camera
 from src.grid_component import GridComponent
+from src.judge_component import JudgeComponent
 from src.player import God, Player
 from src.unit import Unit
 from src.units.irregular import IrregularType
@@ -47,6 +48,7 @@ class GameScene(Scene):
         self.game.init_component(CitiesComponent())
         self.game.init_component(InputComponent())
         self.game.init_component(FogComponent())
+        self.game.init_component(JudgeComponent())
         self.game.set_camera(self.main_camera)
         self.game.load(self._saving)
 

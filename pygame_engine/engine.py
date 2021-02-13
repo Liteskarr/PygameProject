@@ -13,13 +13,15 @@ class Engine:
     target_fps: int = 60
     running: bool = False
     clock: pygame.time.Clock = pygame.time.Clock()
-    _current_scene: Scene
+    _current_scene: Scene = None
 
     @staticmethod
     def set_scene(new_scene: Scene):
         """
         Устанавливает текущую сцену.
         """
+        if Engine._current_scene is not None:
+            Engine._current_scene.on_closing()
         Engine._current_scene = new_scene
         Engine._current_scene.on_starting()
 
@@ -65,3 +67,4 @@ class Engine:
         Engine.running = True
         while Engine.running:
             Engine.update()
+        Engine._current_scene.on_closing()

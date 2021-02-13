@@ -72,7 +72,8 @@ class Unit:
         self.update_modifiers(current_turn)
 
     def after_attack(self):
-        self._moving_points = 0
+        if not self._unit_type.could_move_after_attacking():
+            self._moving_points = 0
 
     def is_alive(self) -> bool:
         return self.count_pow() > 0

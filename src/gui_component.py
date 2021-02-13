@@ -29,9 +29,10 @@ from src.units_building import COST_BY_TYPE, NAME_BY_TYPE
 
 class GUIComponent(GameComponent):
     def init(self):
-        self._current_player: Player = None
-        self._current_cell: Tuple[int, int] = None
-        self.ui_manager = UIManager(Window.get_size())
+        self._current_player: Player
+        self._current_cell: Tuple[int, int]
+        self._current_city_pos: Tuple[int, int]
+        self.ui_manager = UIManager(Window.get_size(), '../data/theme.json')
         self._width, self._height = Window.get_size()
         self.init_ui()
 
@@ -66,6 +67,34 @@ class GUIComponent(GameComponent):
         )
         self.console_log.hide()
 
+        self.city_info_text = UITextBox(
+            manager=self.ui_manager,
+            relative_rect=pygame.Rect((0, self._height - 400), (400, 400)),
+            html_text=''
+        )
+        self.city_info_text.font = font
+        self.city_info_text.rebuild()
+        self.city_info_text.hide()
+
+        self.units_list = UIDropDownMenu(
+            manager=self.ui_manager,
+            relative_rect=pygame.Rect((0, self._height - 425), (400, 25)),
+            starting_option=list(NAME_BY_TYPE.keys())[0],
+            options_list=list(NAME_BY_TYPE.keys())
+        )
+        self.units_list.font = font
+        self.units_list.rebuild()
+        self.units_list.hide()
+
+        self.build_button = UIButton(
+            manager=self.ui_manager,
+            relative_rect=pygame.Rect((0, self._height - 450), (400, 25)),
+            text='Построить'
+        )
+        self.build_button.font = font
+        self.build_button.rebuild()
+        self.build_button.hide()
+
         self.fps_text = UILabel(
             manager=self.ui_manager,
             relative_rect=pygame.Rect((self._width - 150, 0), (50, 50)),
@@ -91,33 +120,14 @@ class GUIComponent(GameComponent):
         self.unit_info_text.rebuild()
         self.unit_info_text.hide()
 
-        self.town_info_text = UITextBox(
+        self.city_closing_button = UIButton(
             manager=self.ui_manager,
-            relative_rect=pygame.Rect((0, self._height - 400), (400, 400)),
-            html_text=''
+            relative_rect=pygame.Rect((0, self._height - 475), (400, 25)),
+            text='Закрыть'
         )
-        self.town_info_text.font = font
-        self.town_info_text.rebuild()
-        self.town_info_text.hide()
-
-        self.units_list = UIDropDownMenu(
-            manager=self.ui_manager,
-            relative_rect=pygame.Rect((0, self._height - 425), (400, 25)),
-            starting_option=list(NAME_BY_TYPE.keys())[0],
-            options_list=list(NAME_BY_TYPE.keys())
-        )
-        self.units_list.font = font
-        self.units_list.rebuild()
-        self.units_list.hide()
-
-        self.build_button = UIButton(
-            manager=self.ui_manager,
-            relative_rect=pygame.Rect((0, self._height - 450), (400, 25)),
-            text='Построить'
-        )
-        self.build_button.font = font
-        self.build_button.rebuild()
-        self.build_button.hide()
+        self.city_closing_button.font = font
+        self.city_closing_button.rebuild()
+        self.city_closing_button.hide()
 
         self.head_label = UILabel(
             manager=self.ui_manager,
@@ -149,14 +159,24 @@ class GUIComponent(GameComponent):
         self._current_cell = packet.args
 
     def handle_city_choosing(self, packet: DataPacket):
-        self.town_info_text.show()
-        self.build_button.show()
-        self.units_list.show()
+        city = packet.args.city
+        self._current_city_pos = packet.args.row, packet.args.column
+        self.city_info_text.show()
+        self.city_closing_button.show()
+        if self._current_player.could_manage(packet.args.city.get_owner()):
+            self.build_button.show()
+            self.units_list.show()
+        self.city_info_text.html_text = f'Название города: {city.get_name()}<br>'
+        self.city_info_text.html_text += f'Прирост людских ресурсов: {city.get_manpower_adding()}<br>'
+        self.city_info_text.html_text += f'Прирост ресурсов: {city.get_resources_adding()}<br>'
+        self.city_info_text.html_text += f'Владелец: {city.get_owner().name}<br>'
+        self.city_info_text.rebuild()
 
     def handle_city_left(self, packet: DataPacket):
-        self.town_info_text.hide()
+        self.city_info_text.hide()
         self.build_button.hide()
         self.units_list.hide()
+        self.city_closing_button.hide()
 
     def handle_next_player(self, packet: DataPacket):
         self._current_player = packet.args.player
@@ -190,7 +210,7 @@ class GUIComponent(GameComponent):
     def try_build_unit(self):
         unit_type = NAME_BY_TYPE[self.units_list.selected_option]
         owner = self._current_player
-        row, column = self._current_cell
+        row, column = self._current_city_pos
         self.push_packet(DataPacket.fast_message_construct(UnitCouldSpawned, row, column, unit_type, owner))
 
     def print_at_console(self, line: str):
@@ -215,6 +235,8 @@ class GUIComponent(GameComponent):
                     self.push_packet(DataPacket.fast_message_construct(NeedsNextTurn))
                 elif event.ui_element == self.build_button:
                     self.try_build_unit()
+                elif event.ui_element == self.city_closing_button:
+                    self.push_packet(DataPacket.fast_message_construct(CityLeft))
 
     def update(self, delta_time: float):
         self.fps_text.set_text(str(int(1 / delta_time)))

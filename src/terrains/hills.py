@@ -17,7 +17,7 @@ class HillTerrain(Terrain):
 
     @staticmethod
     def get_movement_cost() -> int:
-        return 4
+        return 3
 
     @staticmethod
     def get_resource() -> Union[TerrainResource, type]:

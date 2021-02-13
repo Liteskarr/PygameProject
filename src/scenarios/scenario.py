@@ -8,6 +8,9 @@ class ScenarioBuilder:
     def save(self, path: str):
         raise NotImplementedError()
 
+    def get_prefix(self) -> str:
+        raise NotImplementedError()
+
 
 @dataclass
 class Scenario:
