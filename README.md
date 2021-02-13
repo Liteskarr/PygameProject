@@ -1,4 +1,4 @@
-# PygameProject
+# The Best Minecraft Mod
 
 ### Описание
 
@@ -11,5 +11,4 @@
 
 ### Сборка
 
-Собранный .exe лежит в папку dist.
-
+Собранный *.exe лежит в папку dist.
