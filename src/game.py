@@ -10,6 +10,7 @@ from typing import List, Tuple
 
 import pygame
 
+from src.game_scene import GameScene
 from src.pygame_engine.engine import Engine
 
 from src.camera import Camera
@@ -41,7 +42,10 @@ class Game:
         self._players: List
 
     def _init_system(self):
-        self.main_menu_scene_cls = None
+        """
+        Инициализирует системные переменные.
+        """
+        self.main_menu_scene_cls: type = None
         self._components: List = []
 
     def init(self,
@@ -53,6 +57,9 @@ class Game:
              cell_size: int = 40,
              players: List[Player] = None,
              main_menu_scene_cls: type = None):
+        """
+        Инициализирует игру на основе пользовательских переменных.
+        """
         self._main_menu_scene_cls = main_menu_scene_cls
         self.set_name(name)
         self.set_sys_name(sys_name)
@@ -87,7 +94,7 @@ class Game:
     def save(self, saving: str, prefix: str = '../'):
         """
         Сохраняет игру в файловую систему.
-        :param prefix:
+        :param prefix: Префикс пути.
         :param saving: Имя сохранения.
         """
         saving = f'{prefix}savings/{saving}'
@@ -113,8 +120,7 @@ class Game:
 
     def push_packet(self, packet: DataPacket):
         """
-
-        :param packet:
+        Оповещает все компоненты о новом пакете.
         """
         for component in self._components:
             component.handle_packet(packet)
@@ -123,7 +129,7 @@ class Game:
     def handle_packet(self, packet: DataPacket):
         if packet.type is NeedsGameClosing:
             if self.main_menu_scene_cls is None:
-                quit(0)
+                Engine.running = False
             else:
                 Engine.set_scene(self.main_menu_scene_cls())
         elif packet.type is NeedsGameSaving:
@@ -138,6 +144,10 @@ class Game:
         self.get_players_list()[index] = packet.args.player
 
     def restart(self):
+        """
+        Перезапускает игру.
+        :return:
+        """
         self._current_player = -1
         self._current_turn = 1
         self.next_player()
@@ -228,10 +238,6 @@ class Game:
         )
 
     def _set_current_turn(self, current_turn: int):
-        """
-        :param current_turn:
-        :return:
-        """
         self._current_turn = current_turn
 
     def get_current_turn(self) -> int:

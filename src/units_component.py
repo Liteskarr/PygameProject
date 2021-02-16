@@ -48,6 +48,9 @@ def update_dict(d: dict, key, value):
 
 
 class UnitsContainer:
+    """
+    Класс-контейнер для юитов, находящихся на одной клетке.
+    """
     def __init__(self, size_limit: int = 2):
         self.size_limit = size_limit
         self._units: List[Unit] = []
@@ -98,9 +101,7 @@ class UnitsComponent(GameComponent):
         self._pow_modifiers: List[POWModifier] = []
 
     def handle_packet(self, packet: DataPacket):
-        if packet.type is ConsoleCommand:
-            self.handle_command(packet.args)
-        elif packet.type is ClickedAtUnit:
+        if packet.type is ClickedAtUnit:
             self.handle_unit_choosing(packet)
         elif packet.type is ClickedAtCell:
             self.handle_cell_choosing(packet)

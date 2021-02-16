@@ -1,13 +1,11 @@
-from typing import Set, Tuple
-
 import pygame
 
 from src.camera import Camera
 from src.data_packet import DataPacket
-from src.game_component import GameComponent
 from src.data_packets.all import (UnitVisionMapUpdated,
                                   NextTurn,
                                   CityVisionMapUpdated)
+from src.game_component import GameComponent
 
 
 class FogComponent(GameComponent):
