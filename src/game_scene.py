@@ -5,8 +5,8 @@
 from typing import Tuple
 
 import pygame
-from pygame_engine.scene import Scene
-from pygame_engine.window import Window
+from src.pygame_engine.scene import Scene
+from src.pygame_engine.window import Window
 from src.cities_component import CitiesComponent
 from src.fog_component import FogComponent
 
@@ -14,9 +14,7 @@ from src.game import Game
 from src.camera import Camera
 from src.grid_component import GridComponent
 from src.judge_component import JudgeComponent
-from src.player import God, Player
-from src.unit import Unit
-from src.units.irregular import IrregularType
+from src.player import Player
 
 from src.world_map_component import WorldMapComponent
 from src.units_component import UnitsComponent

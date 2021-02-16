@@ -6,7 +6,6 @@
 import pygame
 
 from typing import Tuple
-from pygame_engine.signal import Signal
 
 
 class Scene:

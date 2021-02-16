@@ -4,8 +4,8 @@
 
 import pygame
 
-from pygame_engine.engine import Engine
-from pygame_engine.window import Window
+from src.pygame_engine.engine import Engine
+from src.pygame_engine.window import Window
 
 from src.main_menu_scene import MainMenuScene
 

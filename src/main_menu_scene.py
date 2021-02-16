@@ -9,9 +9,9 @@ import pygame_gui
 from pygame_gui import UIManager
 from pygame_gui.elements import (UIButton, UISelectionList, UILabel)
 
-from pygame_engine.engine import Engine
-from pygame_engine.scene import Scene
-from pygame_engine.window import Window
+from src.pygame_engine.engine import Engine
+from src.pygame_engine.scene import Scene
+from src.pygame_engine.window import Window
 
 from src.scenarios.all import (BaseScenarioBuilder)
 from src.game_scene import GameScene

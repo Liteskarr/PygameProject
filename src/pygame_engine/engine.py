@@ -5,8 +5,8 @@ from typing import NoReturn
 
 import pygame
 
-from pygame_engine.window import Window
-from pygame_engine.scene import Scene
+from src.pygame_engine.window import Window
+from src.pygame_engine.scene import Scene
 
 
 class Engine:

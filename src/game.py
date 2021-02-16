@@ -6,13 +6,11 @@ import os
 import json
 import pathlib
 import pickle
-from itertools import cycle
 from typing import List, Tuple
 
 import pygame
 
-from pygame_engine.engine import Engine
-from pygame_engine.window import Window
+from src.pygame_engine.engine import Engine
 
 from src.camera import Camera
 from src.data_packet import DataPacket

@@ -5,7 +5,7 @@ import pygame_gui
 from pygame_gui.ui_manager import UIManager
 from pygame_gui.elements import UIButton, UITextEntryLine, UITextBox, UILabel, UIDropDownMenu
 
-from pygame_engine.window import Window
+from src.pygame_engine.window import Window
 
 from src.camera import Camera
 from src.game_component import GameComponent
@@ -24,7 +24,7 @@ from src.data_packets.all import (ConsoleCommand,
                                   UnitCouldSpawned,
                                   PlayerUpdated)
 from src.player import Player
-from src.units_building import COST_BY_TYPE, NAME_BY_TYPE
+from src.units_building import NAME_BY_TYPE
 
 
 class GUIComponent(GameComponent):
