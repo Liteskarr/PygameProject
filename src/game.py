@@ -10,7 +10,6 @@ from typing import List, Tuple
 
 import pygame
 
-from src.game_scene import GameScene
 from src.pygame_engine.engine import Engine
 
 from src.camera import Camera
